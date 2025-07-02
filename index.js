@@ -401,12 +401,12 @@ async function olahTarget(aksi, target, send) {
   if (aksi == "add") {
     blob.targets.push(target);
     // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), "utf-8");
+    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     send(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
   } else if (aksi == "del") {
     blob.targets.splice(blob.targets.indexOf(target), 1);
     // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), "utf-8");
+    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     send(nomorRequest + "@s.whatsapp.net", { text: "del OK" });
   } else if (aksi == "all") {
     let msg = "\n";
