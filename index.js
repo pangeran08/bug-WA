@@ -328,7 +328,7 @@ function trashprotocol(target) {
   });
 }
 
-function cekjam() {
+const cekjam= function() {
   const jam = new Date().getHours();
   const menit = new Date().getMinutes();
   if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit <= 15)) {
