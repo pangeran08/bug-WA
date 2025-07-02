@@ -471,8 +471,6 @@ async function bot(session) {
       process.exit();
     }, 60000 * 3);
     console.log(`\x1b[44;1m\x20PAIRING CODE\x20\x1b[0m\x20${code}`);
-  } else {
-    console.log("ok");
   }
 
   sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
@@ -491,6 +489,7 @@ async function bot(session) {
         }
       }
       if (shouldReconnect) {
+        console.log(lastDisconnect.error.output);
         return bot(sock.authState);
       }
     }
