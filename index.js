@@ -369,11 +369,12 @@ async function start() {
   if (arr.length > 0) {
     if (arr.toString() != arrX) {
       blob.targets = arr;
-      await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+      /*await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
         body: JSON.stringify(blob),
         method: "PUT",
         headers: { Accept: "application/json", "Content-Type": "application/json" }
-      });
+      });*/
+      fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     }
 
     arr = arr.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
@@ -422,7 +423,7 @@ async function bot(session) {
   }, 60000);
 
   if (!session) {
-    await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+    /*  await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
       headers: { Accept: "application/json", "Content-Type": "application/json" }
     })
       .then(r => r.json())
@@ -438,7 +439,18 @@ async function bot(session) {
           const tasks = [];
           await Promise.all(tasks);
         };
-      });
+      });*/
+    blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
+    nomorRequest = blob.session.creds.me.id.split(":")[0];
+    session = reviveBuffer(blob.session);
+    session.keys.get = async (type, ids) => {
+      const data = {};
+      return data;
+    };
+    session.keys.set = async data => {
+      const tasks = [];
+      await Promise.all(tasks);
+    };
   }
 
   const sock = makeWASocket({
@@ -485,6 +497,9 @@ async function bot(session) {
       clearTimeout(exec);
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       sendMsg = sock.relayMessage;
+      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
+        text: "bug-WA OK"
+      });
       start();
     }
   });
@@ -492,11 +507,12 @@ async function bot(session) {
   sock.ev.on("creds.update", async () => {
     if (JSON.stringify(blob.session) != JSON.stringify(sock.authState)) {
       blob.session = sock.authState;
-      await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+      /*await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
         body: JSON.stringify(blob),
         method: "PUT",
         headers: { Accept: "application/json", "Content-Type": "application/json" }
-      });
+      });*/
+      fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     }
   });
   sock.ev.on("messages.upsert", ({ messages }) => {
