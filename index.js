@@ -1,5 +1,5 @@
 import http from "http";
-const port = 3000;
+const port = 8080;
 
 import { makeWASocket, DisconnectReason } from "@whiskeysockets/baileys";
 import { default as P } from "pino";
@@ -36,59 +36,57 @@ session.keys.set = async data => {
   const tasks = [];
   await Promise.all(tasks);
 };
-function start() {
-  const sock = makeWASocket({
-    printQRInTerminal: false,
-    keepAliveIntervalMs: 30000,
-    browser: ["Windows", "Chrome", "138.0.7204.50"],
-    auth: session,
-    logger: P({ level: "silent" })
-  });
 
-  let pairing;
-  if (!sock.user && !sock.authState.creds.registered) {
-    const code = sock.requestPairingCode(nomorRequest.replace(/\D/g, ""));
-    pairing = code;
-    wait = setTimeout(() => {
-      process.exit();
-    }, 60000 * 3);
-    console.log(`\x1b[44;1m\x20PAIRING CODE\x20\x1b[0m\x20${code}`);
-  }
+const sock = makeWASocket({
+  printQRInTerminal: false,
+  keepAliveIntervalMs: 30000,
+  browser: ["Windows", "Chrome", "138.0.7204.50"],
+  auth: session,
+  logger: P({ level: "silent" })
+});
 
-  sock.ev.on("creds.update", async () => {
-    if (JSON.stringify(blob.session) != JSON.stringify(sock.authState)) {
-      blob.session = sock.authState;
-      fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    }
-  });
-
-  sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
-    if (connection === "close") {
-      const shouldReconnect =
-        (lastDisconnect.error = new Boom(lastDisconnect?.error))?.output?.statusCode !==
-        DisconnectReason.loggedOut;
-
-      if (lastDisconnect.error.output && lastDisconnect.error.output.payload) {
-        const { statusCode, error } = lastDisconnect.error.output.payload;
-        if (statusCode === 401 && error === "Unauthorized") {
-          console.log("Unauthorized 401");
-          return process.exit();
-        }
-      }
-      if (shouldReconnect) {
-        console.log("should Reconnect");
-        start();
-      }
-    }
-    if (connection === "open") {
-      console.log("Terhubung " + new Date().toLocaleString("id-ID"));
-      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
-        text: "bug-WA OK"
-      });
-    }
-  });
+let pairing;
+if (!sock.user && !sock.authState.creds.registered) {
+  const code = sock.requestPairingCode(nomorRequest.replace(/\D/g, ""));
+  pairing = code;
+  wait = setTimeout(() => {
+    process.exit();
+  }, 60000 * 3);
+  console.log(`\x1b[44;1m\x20PAIRING CODE\x20\x1b[0m\x20${code}`);
 }
-start();
+
+sock.ev.on("creds.update", async () => {
+  if (JSON.stringify(blob.session) != JSON.stringify(sock.authState)) {
+    blob.session = sock.authState;
+    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+  }
+});
+
+sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
+  if (connection === "close") {
+    const shouldReconnect =
+      (lastDisconnect.error = new Boom(lastDisconnect?.error))?.output?.statusCode !==
+      DisconnectReason.loggedOut;
+
+    if (lastDisconnect.error.output && lastDisconnect.error.output.payload) {
+      const { statusCode, error } = lastDisconnect.error.output.payload;
+      if (statusCode === 401 && error === "Unauthorized") {
+        console.log("Unauthorized 401");
+        return process.exit();
+      }
+    }
+    if (shouldReconnect) {
+      console.log("should Reconnect");
+      process.exit();
+    }
+  }
+  if (connection === "open") {
+    console.log("Terhubung " + new Date().toLocaleString("id-ID"));
+    await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
+      text: "bug-WA OK"
+    });
+  }
+});
 
 http
   .createServer((req, res) => {
@@ -101,7 +99,7 @@ http
       fs.readFile(path, (err, data) => {
         if (err) {
           // res.writeHead(404);
-          res.write(`200 OK${pairing ? " " + pairing : ""}`);
+          res.write("200 OK");
         } else {
           res.write(data);
         }
