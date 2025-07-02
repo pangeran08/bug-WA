@@ -15,7 +15,7 @@ let blob;
 
 function tunggu(delay) {
   return new Promise(resolve => {
-    setTimeout(() => resolve(), delay);
+    setTimeout(resolve, delay);
   });
 }
 
@@ -335,7 +335,7 @@ function trashprotocol(target) {
 function cekJam() {
   const jam = new Date().getHours();
   const menit = new Date().getMinutes();
-  if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit <= 15)) {
+  if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit < 15)) {
     process.exit();
   }
 }
@@ -375,11 +375,10 @@ async function start() {
   const jam = new Date().getHours();
   const targets = blob.targets;
   const arrX = blob.targets.toString();
-
-  if ((jam > 21 && jam < 4) || targets.length < 1) {
-    exec = setTimeout(() => {
-      start();
-    }, 60000 * 5);
+  if (targets.length < 1) {
+    process.exit();
+  } else if (jam > 21 && jam < 4) {
+    exec = setTimeout(start, 60000 * 5);
   }
   let arr = targets;
   targets.forEach(e => {
@@ -400,9 +399,7 @@ async function start() {
     blob.waktu = new Date().getTime() + 60000 * 6.5;
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    exec = setTimeout(() => {
-      start();
-    }, 60000 * 5);
+    exec = setTimeout(start, 60000 * 5);
   }
 }
 
@@ -442,9 +439,7 @@ let pairing;
 let wait;
 async function bot(session) {
   cekJam();
-  wait = setTimeout(() => {
-    process.exit();
-  }, 60000);
+  wait = setTimeout(process.exit, 60000);
 
   if (!session) {
     const { state } = await useMultiFileAuthState("session");
@@ -491,9 +486,7 @@ async function bot(session) {
     clearTimeout(wait);
     clearTimeout(exec);
     pairing = code;
-    wait = setTimeout(() => {
-      process.exit();
-    }, 60000 * 3);
+    wait = setTimeout(process.exit, 60000 * 3);
     console.log(`\x1b[44;1m\x20PAIRING CODE\x20\x1b[0m\x20${code}`);
   }
 
