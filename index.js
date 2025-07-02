@@ -392,16 +392,18 @@ async function start() {
       arr.splice(arr.indexOf(e), 1);
     }
   });
+  if (arr.toString() != arrX) {
+    blob.targets = arr;
+    // await updateData();
+    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+  }
   if (arr.length > 0) {
-    if (arr.toString() != arrX) {
-      blob.targets = arr;
-      // await updateData();
-      fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    }
     await serang();
     blob.waktu = new Date().getTime() + 60000 * 6.5;
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    exec = setTimeout(start, 60000 * 5);
+  } else {
     exec = setTimeout(start, 60000 * 5);
   }
 }
@@ -526,6 +528,7 @@ async function bot(session) {
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       relayMsg = sock.relayMessage;
       sendMsg = sock.sendMessage;
+      pairing = undefined;
       const timeNow = new Date().getTime();
       if (blob.waktu + 60000 * 5 <= timeNow) {
         start();
