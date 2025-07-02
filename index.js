@@ -408,10 +408,14 @@ async function start() {
 
 async function olahTarget(aksi, target) {
   if (aksi == "add" && target) {
-    clearTimeout(wait);
     blob.targets.push(target);
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    if (wait?._destroyed == false) {
+      clearTimeout(wait);
+      wait = undefined;
+      start();
+    }
     sendMsg(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
   } else if (aksi == "del" && blob.targets.indexOf(target) >= 0) {
     blob.targets.splice(blob.targets.indexOf(target), 1);
