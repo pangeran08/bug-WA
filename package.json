@@ -12,6 +12,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@whiskeysockets/baileys": "6.7.16"
+    "@whiskeysockets/baileys": "github:kagenouReal/Baileys"
   }
 }
