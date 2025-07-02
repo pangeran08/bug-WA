@@ -377,7 +377,9 @@ async function start() {
   const arrX = blob.targets.toString();
 
   if ((jam > 21 && jam < 4) || targets.length < 1) {
-    exec = setTimeout(() => start, 60000 * 5);
+    exec = setTimeout(() => {
+      start();
+    }, 60000 * 5);
   }
   let arr = targets;
   targets.forEach(e => {
@@ -398,7 +400,9 @@ async function start() {
     blob.waktu = new Date().getTime() + 60000 * 6.5;
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-    exec = setTimeout(() => start, 60000 * 5);
+    exec = setTimeout(() => {
+      start();
+    }, 60000 * 5);
   }
 }
 
