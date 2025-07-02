@@ -440,6 +440,10 @@ async function bot(session) {
           await Promise.all(tasks);
         };
       });*/
+    if (!fs.existsSync("./data.json")) {
+      console.error("data.json tidak ditemukan");
+      process.exit(1);
+    }
     blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
     nomorRequest = blob.session.creds.me.id.split(":")[0];
     session = reviveBuffer(blob.session);
