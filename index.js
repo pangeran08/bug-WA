@@ -399,7 +399,7 @@ async function start() {
   }
   if (arr.length > 0) {
     await serang();
-    blob.waktu = new Date().getTime() + 60000 * 6.5;
+    blob.waktu = new Date().getTime() + 60000 * 5;
     // await updateData();
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     exec = setTimeout(start, 60000 * 5);
@@ -415,7 +415,6 @@ async function olahTarget(aksi, target) {
     fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     if (wait?._destroyed == false) {
       clearTimeout(wait);
-      wait = undefined;
       start();
     }
     sendMsg(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
@@ -547,9 +546,9 @@ async function bot(session) {
 
   sock.ev.on("messages.upsert", ({ messages }) => {
     cekJam();
-    /*if (fs.readdirSync("./").indexOf("session") >= 0) {
+    if (fs.readdirSync("./").indexOf("session") >= 0) {
       fs.rmSync("./session/", { recursive: true });
-    }*/
+    }
     messages.forEach(async e => {
       if (e.key.remoteJid === nomorRequest + "@s.whatsapp.net" && e.key.fromMe === true) {
         const pesanMasuk = e.message?.conversation || e.message?.extendedTextMessage?.text;
@@ -563,7 +562,7 @@ async function bot(session) {
         const target = args.join(" ");
 
         switch (command) {
-          case "test":
+          case "tes":
             await sendMsg(nomorRequest + "@s.whatsapp.net", {
               text: "bug-WA OK"
             });
