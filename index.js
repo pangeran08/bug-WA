@@ -1,4 +1,7 @@
 process.env.TZ = "Asia/Jakarta";
+const exitTime = new Date().setHours(21, 45) - new Date().getTime();
+setTimeout(process.exit, exitTime);
+
 import {
   makeWASocket,
   useMultiFileAuthState,
@@ -332,18 +335,9 @@ function trashprotocol(target) {
   });
 }
 
-function cekJam() {
-  const jam = new Date().getHours();
-  const menit = new Date().getMinutes();
-  if (jam > 21 || jam < 5 || (jam >= 21 && menit >= 45) || (jam <= 5 && menit < 15)) {
-    process.exit();
-  }
-}
-
 function serang(targets) {
   return new Promise(async resolve => {
     for (let i = 1; i <= 40; i++) {
-      cekJam();
       await protocolbug5();
       await tunggu(1500);
       await protocolbug3();
@@ -373,7 +367,6 @@ let sendMsg;
 let exec;
 let wait;
 async function start() {
-  cekJam();
   const targets = blob.targets;
   const arrX = blob.targets.toString();
   if (targets.length < 1) {
@@ -446,7 +439,6 @@ const reviveBuffer = obj => {
 
 let pairing;
 async function bot(session) {
-  cekJam();
   wait = setTimeout(process.exit, 60000);
 
   if (!session) {
@@ -547,7 +539,6 @@ async function bot(session) {
   });
 
   sock.ev.on("messages.upsert", ({ messages }) => {
-    cekJam();
     /*if (fs.readdirSync("./").indexOf("session") >= 0) {
       fs.rmSync("./session/", { recursive: true });
     }*/
