@@ -9,7 +9,7 @@ import {
 import { Boom } from "@hapi/boom";
 import fs from "fs";
 import pino from "pino";
-let nomorRequest = "6287839025789";
+let nomorRequest;
 let relayMsg;
 let blob;
 
@@ -475,6 +475,7 @@ async function bot(session) {
       session.keys.get = state.keys.get;
       session.keys.set = state.keys.set;
     } else {
+      nomorRequest = blob.nomor;
       session = state;
     }*/
   }
@@ -547,9 +548,9 @@ async function bot(session) {
 
   sock.ev.on("messages.upsert", ({ messages }) => {
     cekJam();
-    if (fs.readdirSync("./").indexOf("session") >= 0) {
+    /*if (fs.readdirSync("./").indexOf("session") >= 0) {
       fs.rmSync("./session/", { recursive: true });
-    }
+    }*/
     messages.forEach(async e => {
       if (e.key.remoteJid === nomorRequest + "@s.whatsapp.net" && e.key.fromMe === true) {
         const pesanMasuk = e.message?.conversation || e.message?.extendedTextMessage?.text;
