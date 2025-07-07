@@ -171,13 +171,20 @@ http
       });
     };
 
+    const kirim = async () => {
+      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: "ok1" });
+      res.write(`200 OK${pairing ? " " + pairing : ""}`);
+      res.end();
+    };
+
     if (url) {
-      if (!load) {
+      if (!sock) {
         load = 1;
         console.log(load);
         bot(undefined, res);
       } else {
-        renderHTML("./index.html");
+        kirim();
+        //renderHTML("./index.html");
       }
     }
   })
