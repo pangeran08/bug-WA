@@ -50,7 +50,7 @@ function end() {
 
 let sock;
 let pairing;
-async function bot(session,res) {
+async function bot(session, res) {
   wait = setTimeout(process.exit, 60000);
 
   if (!session) {
@@ -123,12 +123,12 @@ async function bot(session,res) {
           blob.session = {};
           await updateData();
           //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-          return bot(undefined,res);
+          return bot(undefined, res);
         }
       }
       if (shouldReconnect) {
         console.log("reconnecting...");
-        return bot(sock.authState,res);
+        return bot(sock.authState, res);
       }
     }
     if (connection === "open") {
@@ -136,7 +136,7 @@ async function bot(session,res) {
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: "ok" });
       res.write(`200 OK${pairing ? " " + pairing : ""}`);
-        res.end();
+      res.end();
     }
   });
 
@@ -151,7 +151,7 @@ async function bot(session,res) {
 
 import http from "http";
 const port = 3000;
-
+let load;
 http
   .createServer((req, res) => {
     const url = req.url;
@@ -159,7 +159,7 @@ http
       "Content-Type": "text/html"
     });
 
-    const renderHTML = (path, res) => {
+    const renderHTML = path => {
       fs.readFile(path, (err, data) => {
         if (err) {
           // res.writeHead(404);
@@ -171,12 +171,14 @@ http
       });
     };
 
-    switch (url) {
-      default:
-        console.log("ok");
-        if (!sock) bot(undefined,res);
-        
-      // renderHTML("./index.html", res);
+    if (url) {
+      if (!load) {
+        load = 1;
+        console.log(load);
+        bot(undefined, res);
+      } else {
+        renderHTML("./index.html");
+      }
     }
   })
   .listen(port, () => {
