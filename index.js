@@ -183,7 +183,7 @@ http
         console.log(load);
         bot(undefined, res);
       } else {
-        kirim();
+        kirim('');
         //renderHTML("./index.html");
       }
     }
