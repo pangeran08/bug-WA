@@ -50,7 +50,7 @@ function end() {
 
 let sock;
 let pairing;
-async function bot(session) {
+async function bot(session,res) {
   wait = setTimeout(process.exit, 60000);
 
   if (!session) {
@@ -123,19 +123,20 @@ async function bot(session) {
           blob.session = {};
           await updateData();
           //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-          return bot();
+          return bot(undefined,res);
         }
       }
       if (shouldReconnect) {
         console.log("reconnecting...");
-        return bot(sock.authState);
+        return bot(sock.authState,res);
       }
     }
     if (connection === "open") {
       clearTimeout(wait);
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
       await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: "ok" });
-      return new Promise(resolve => resolve);
+      res.write(`200 OK${pairing ? " " + pairing : ""}`);
+        res.end();
     }
   });
 
@@ -152,7 +153,7 @@ import http from "http";
 const port = 3000;
 
 http
-  .createServer(async (req, res) => {
+  .createServer((req, res) => {
     const url = req.url;
     res.writeHead(200, {
       "Content-Type": "text/html"
@@ -173,9 +174,8 @@ http
     switch (url) {
       default:
         console.log("ok");
-        if (!sock) await bot();
-        res.write(`200 OK${pairing ? " " + pairing : ""}`);
-        res.end();
+        if (!sock) bot(undefined,res);
+        
       // renderHTML("./index.html", res);
     }
   })
