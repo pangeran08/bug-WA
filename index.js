@@ -151,7 +151,7 @@ async function bot(session, res) {
 
 import http from "http";
 const port = 3000;
-let load;
+
 http
   .createServer((req, res) => {
     const url = req.url;
@@ -177,10 +177,8 @@ http
       res.end();
     };
 
-    if (url) {
+    if (url!='/') {
       if (!sock) {
-        load = 1;
-        console.log(load);
         bot(undefined, res);
       } else {
         kirim();
