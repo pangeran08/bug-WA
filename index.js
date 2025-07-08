@@ -177,13 +177,16 @@ http
       res.end();
     };
 
-    if (url!='/') {
+    if (url != "/") {
       if (!sock) {
         bot(undefined, res);
       } else {
         kirim();
         //renderHTML("./index.html");
       }
+    } else {
+      res.write(`/ 200 OK${pairing ? " " + pairing : ""}`);
+      res.end();
     }
   })
   .listen(port, () => {
