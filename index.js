@@ -49,8 +49,14 @@ function end() {
 }
 
 let sock;
+const kirim = async (res,url) => {
+      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: url });
+      res.write(`200 OK${pairing ? " " + pairing : ""}`);
+      res.end();
+    };
+
 let pairing;
-async function bot(session, res) {
+async function bot(session, res,url) {
   wait = setTimeout(process.exit, 60000);
 
   if (!session) {
@@ -123,20 +129,18 @@ async function bot(session, res) {
           blob.session = {};
           await updateData();
           //fs.writeFileSync("./data.json", JSON.stringify(blob), null, 2);
-          return bot(undefined, res);
+          return bot(undefined, res,url);
         }
       }
       if (shouldReconnect) {
         console.log("reconnecting...");
-        return bot(sock.authState, res);
+        return bot(sock.authState, res,url);
       }
     }
     if (connection === "open") {
       clearTimeout(wait);
       console.log("Terhubung " + new Date().toLocaleString("id-ID"));
-      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: "ok" });
-      res.write(`200 OK${pairing ? " " + pairing : ""}`);
-      res.end();
+      kirim(res,url)
     }
   });
 
@@ -171,17 +175,11 @@ http
       });
     };
 
-    const kirim = async () => {
-      await sock.sendMessage(nomorRequest + "@s.whatsapp.net", { text: "ok1" });
-      res.write(`200 OK${pairing ? " " + pairing : ""}`);
-      res.end();
-    };
-
     if (url != "/") {
       if (!sock) {
-        bot(undefined, res);
+        bot(undefined, res,url);
       } else {
-        kirim();
+        kirim(res,url);
         //renderHTML("./index.html");
       }
     } else {
